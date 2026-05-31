@@ -52,6 +52,18 @@ export const BAZI_SYSTEM_INSTRUCTION = `
 - 正财旺、稳健 -> "现货定投"
 `;
 
+export const STRICT_JSON_OUTPUT_CONTRACT = `
+【最终输出格式契约 - 必须严格遵守】
+1. 只返回一个完整 JSON 对象，不要返回 Markdown、解释文字或省略号。
+2. 顶层必须包含完整命理报告字段和 chartPoints。
+3. chartPoints 必须恰好包含 100 条对象，对应 age 1 到 age 100，不得缩减为大运列表。
+4. chartPoints 的每一条对象都必须包含以下全部字段，禁止省略：
+   {"age":1,"year":1990,"daYun":"童限","ganZhi":"庚午","open":50,"close":55,"high":60,"low":45,"score":55,"reason":"20-30字以内的流年简评"}
+5. 数值约束：high >= open、high >= close、low <= open、low <= close、high >= low。
+6. daYun 只是每条 K 线对象中的一个字段。即使大运连续 10 年相同，也必须逐年输出完整对象。
+7. 输出前自行检查：chartPoints 是否为 100 条，每条是否都含 age、year、daYun、ganZhi、open、close、high、low、score、reason。
+`;
+
 // 系统状态开关
 // 1: 正常服务 (Normal)
 // 0: 服务器繁忙/维护 (Busy/Maintenance)

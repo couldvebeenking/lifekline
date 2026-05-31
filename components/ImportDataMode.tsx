@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { LifeDestinyResult } from '../types';
 import { Copy, CheckCircle, AlertCircle, Upload, Sparkles, MessageSquare, ArrowRight } from 'lucide-react';
-import { BAZI_SYSTEM_INSTRUCTION } from '../constants';
+import { BAZI_SYSTEM_INSTRUCTION, STRICT_JSON_OUTPUT_CONTRACT } from '../constants';
+import { validateChartPoints } from '../services/validateChartPoints';
 
 interface ImportDataModeProps {
     onDataImport: (data: LifeDestinyResult) => void;
@@ -96,7 +97,9 @@ const ImportDataMode: React.FC<ImportDataModeProps> = ({ onDataImport }) => {
 3. 在 \`reason\` 字段中提供流年详批。
 4. 生成带评分的命理分析报告（包含性格分析、币圈交易分析、发展风水分析）。
 
-请严格按照系统指令生成 JSON 数据。务必只返回纯JSON格式数据，不要包含任何markdown代码块标记或其他文字说明。`;
+${STRICT_JSON_OUTPUT_CONTRACT}
+
+请严格按照系统指令和最终输出格式契约生成 JSON 数据。`;
     };
 
     // 复制完整提示词
@@ -141,17 +144,11 @@ const ImportDataMode: React.FC<ImportDataModeProps> = ({ onDataImport }) => {
             const data = JSON.parse(jsonContent);
 
             // 校验数据
-            if (!data.chartPoints || !Array.isArray(data.chartPoints)) {
-                throw new Error('数据格式不正确：缺少 chartPoints 数组');
-            }
-
-            if (data.chartPoints.length < 10) {
-                throw new Error('数据不完整：chartPoints 数量太少');
-            }
+            const chartPoints = validateChartPoints(data.chartPoints);
 
             // 转换为应用所需格式
             const result: LifeDestinyResult = {
-                chartData: data.chartPoints,
+                chartData: chartPoints,
                 analysis: {
                     bazi: data.bazi || [],
                     summary: data.summary || "无摘要",

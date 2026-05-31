@@ -5,6 +5,7 @@ import AnalysisResult from './components/AnalysisResult';
 import ImportDataMode from './components/ImportDataMode';
 import { LifeDestinyResult } from './types';
 import { Sparkles, AlertCircle, Download, Printer, Trophy, FileDown, FileUp } from 'lucide-react';
+import { validateChartPoints } from './services/validateChartPoints';
 
 const App: React.FC = () => {
   const [result, setResult] = useState<LifeDestinyResult | null>(null);
@@ -69,12 +70,10 @@ const App: React.FC = () => {
         const content = e.target?.result as string;
         const data = JSON.parse(content);
 
-        if (!data.chartPoints || !Array.isArray(data.chartPoints)) {
-          throw new Error('无效的数据格式：缺少 chartPoints');
-        }
+        const chartPoints = validateChartPoints(data.chartPoints);
 
         const importedResult: LifeDestinyResult = {
-          chartData: data.chartPoints,
+          chartData: chartPoints,
           analysis: {
             bazi: data.bazi || [],
             summary: data.summary || "无摘要",

@@ -1,6 +1,7 @@
 
 import { UserInput, LifeDestinyResult, Gender } from "../types";
-import { BAZI_SYSTEM_INSTRUCTION } from "../constants";
+import { BAZI_SYSTEM_INSTRUCTION, STRICT_JSON_OUTPUT_CONTRACT } from "../constants";
+import { validateChartPoints } from "./validateChartPoints";
 
 // Helper to determine stem polarity
 const getStemPolarity = (pillar: string): 'YANG' | 'YIN' => {
@@ -130,7 +131,9 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
     3. 在 \`reason\` 字段中提供流年详批。
     4. 生成带评分的命理分析报告（包含性格分析、币圈交易分析、发展风水分析）。
     
-    请严格按照系统指令生成 JSON 数据。
+    ${STRICT_JSON_OUTPUT_CONTRACT}
+
+    请严格按照系统指令和最终输出格式契约生成 JSON 数据。
   `;
 
   try {
@@ -143,10 +146,10 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
       body: JSON.stringify({
         model: targetModel,
         messages: [
-          { role: "system", content: BAZI_SYSTEM_INSTRUCTION + "\n\n请务必只返回纯JSON格式数据，不要包含任何markdown代码块标记。" },
+          { role: "system", content: BAZI_SYSTEM_INSTRUCTION + "\n\n" + STRICT_JSON_OUTPUT_CONTRACT },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.7,
+        temperature: 0.3,
         max_tokens: 30000
       })
     });
@@ -183,12 +186,10 @@ export const generateLifeAnalysis = async (input: UserInput): Promise<LifeDestin
     const data = JSON.parse(jsonContent);
 
     // 简单校验数据完整性
-    if (!data.chartPoints || !Array.isArray(data.chartPoints)) {
-      throw new Error("模型返回的数据格式不正确（缺失 chartPoints）。");
-    }
+    const chartPoints = validateChartPoints(data.chartPoints);
 
     return {
-      chartData: data.chartPoints,
+      chartData: chartPoints,
       analysis: {
         bazi: data.bazi || [],
         summary: data.summary || "无摘要",
